@@ -28,6 +28,12 @@ public:
    vector<real> di;  // Диагональ
    vector<real> pr;  // Вектор правой части
 
+   vector<real> t;   // Вспомогательный вектор для МСГ
+   vector<real> rk;  // Вектор невязки на текущей итерации МСГ
+   vector<real> rk1; // Вектор невязки на перд. итерации МСГ
+   vector<real> zk1; // Вектор спуска на пред. итерации МСГ
+   vector<real> AtAzk1; // Вспомогательный вектор для МСГ
+
    // Конструктор класса SLAE
    SLAE(string path)
    {
@@ -50,6 +56,12 @@ public:
 
       read_vector<real>(path + "di.txt", di, N);
       read_vector<real>(path + "pr.txt", pr, N);
+
+      t.resize(N);
+      rk.resize(N);
+      rk1.resize(N);
+      zk1.resize(N);
+      AtAzk1.resize(N);
    }
 
    // Ввод вектора vec размерности n из файла с именем file_name
@@ -71,7 +83,7 @@ public:
       for (int i = 0; i < N; i++)
       {
          // Диагональ
-         res[i] += vec[i] * di[i];
+         res[i] = vec[i] * di[i];
 
          // Нижний треугольник
          int prof_len = igl[i + 1] - igl[i];
@@ -97,6 +109,9 @@ public:
    // на вектор vec, результат в res
    void matrixT_vector_mult(const vector<real>& vec, vector<real>& res)
    {
+      for (int i = 0; i < N; i++)
+         res[i] = 0;
+
       for (int j = 0; j < N; j++)
       {
          // Диагональ
@@ -115,47 +130,38 @@ public:
          prof_len = igl[j + 1] - igl[j];
          for (int k = 0; k < prof_len; k++)
          {
-            int i_in_prof = igl[j] + k;
-            int i = jgl[i_in_prof];
-            res[i] += vec[j] * ggl[i_in_prof];
+            int index_in_prof = igl[j] + k;
+            int i = jgl[index_in_prof];
+            res[i] += vec[j] * ggl[index_in_prof];
          }
       }
    }
 
    // Метод сопряженных градиентов
-   void conj_grad_method(vector<real>& xk1)
+   void conj_grad_method(vector<real> xk1, vector<real>& res)
    {
-      vector<real> t(N);           // Вспомогательный вектор
-
-      matrix_vector_mult(xk1, t);
-
-      vector<real> rk1(N);        // Вектор невязки на перд. итерации
-      matrixT_vector_mult(pr - t, rk1);
-      vector<real> zk1(rk1);      // Вектор спуска на пред. итерации
+      matrix_vector_mult(xk1, t);  // t = A * x0
+      matrixT_vector_mult(pr - t, rk1);   // r0 = AT(f - A * x0)
+      zk1 = rk1;
 
       for (int k = 1; k < maxiter; k++)
       {
-         matrix_vector_mult(zk1, t);
+         matrix_vector_mult(zk1, t);     // t = A * zk-1
 
-         vector<real> AtAzk1(N);
-         matrixT_vector_mult(t, AtAzk1);
-
-         real ak = scalar_mult(rk1, rk1) / scalar_mult(AtAzk1, zk1);
-
-         vector<real> xk(xk1 + ak * zk1);
-         vector<real> rk(rk1 - ak * AtAzk1);
-
-         real bk = scalar_mult(rk, rk) / scalar_mult(rk1, rk1);
-
-         vector<real> zk(rk + bk * zk1);
+         matrixT_vector_mult(t, AtAzk1); // AtAzk1 = At * A * zk-1
+         real ak = (rk1 * rk1) / (AtAzk1 * zk1);
+         xk1 = xk1 + ak * zk1;
+         rk = rk1 - ak * AtAzk1;
+         real bk = (rk * rk) / (rk1 * rk1);
+         zk1 = rk + bk * zk1;
 
          rk1 = rk;
-         zk1 = zk;
-         xk1 = xk;
 
          if (norm(rk) / norm(pr) < eps)
             break;
       }
+
+      res = xk1;
    }
 };
 

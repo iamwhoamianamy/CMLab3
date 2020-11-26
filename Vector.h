@@ -41,7 +41,7 @@ vector<real> operator - (const vector<real>& vec1, const vector<real>& vec2)
 }
 
 // Скалярное произведение векторов
-real scalar_mult(const vector<real>& vec1, const vector<real>& vec2)
+real operator *(const vector<real>& vec1, const vector<real>& vec2)
 {
    if (vec1.size() != vec2.size())
       throw("vec1.size() != vec2.size()");
@@ -58,5 +58,5 @@ real scalar_mult(const vector<real>& vec1, const vector<real>& vec2)
 // Норма вектора
 real norm(const vector<real>& vec)
 {
-   return sqrt(scalar_mult(vec, vec));
+   return sqrt(vec * vec);
 }
