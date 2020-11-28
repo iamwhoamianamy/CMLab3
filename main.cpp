@@ -13,7 +13,7 @@ void gen_hilb(int n)
    ofstream fout;
    fout.open(path0 + "kuslau.txt");
 
-   fout << n << " " << 10000 << " " << 10e-14;
+   fout << n << " " << "10000" << " " << "10e-14";
 
    fout.close();
 
@@ -49,26 +49,30 @@ void gen_hilb(int n)
    print_vector(path0 + "jg.txt", jg);
 }
 
-// Умножение матрицы на вектор x = 1,2,3,...,n и формирование отчета
-// путем решение СЛАУ всеми методами
-void report(string test)
+// Формирование отчета путем решение СЛАУ всеми методами
+void report(string test, bool calc_pr)
 {
    // Считываение матрицы из соответствующей папки
    string path0 = "tests/" + test + "/";  // Путь к папке с матрицей
    SLAE slae = SLAE(path0);               // Ввод матрицы из файлов
-   int n = slae.N;
+   int n = slae.mat.N;
+
+   vector<real> x(n);
+   vector<real> res(n);
 
    // Создание вектора x = 1,2,3,...,n , умножение матрицы на него,
-   // записсь результата в файл "pr.txt"
-   vector<real> x(n);
+   // записсcь результата в файл "pr.txt"
+   if (calc_pr)
+   {
+      for (int i = 0; i < n; i++)
+         x[i] = i + 1;
 
-   for (int i = 0; i < n; i++)
-      x[i] = i + 1;
-
-   vector<real> res(n, 0);
-
-   slae.matrix_vector_mult(x, res, slae.ggl, slae.ggu);
-   print_vector(path0 + "pr.txt", res);
+      slae.matrix_vector_mult(x, res, slae.mat.ggl, slae.mat.ggu);
+      print_vector(path0 + "pr.txt", res);
+   }
+   
+   // Чтение вектора правой части из файла
+   read_vector(path0 + "pr.txt", slae.pr, n);
 
    // Формирование отчета в файл "report_.txt" в папке reports
    ofstream fout;
@@ -76,28 +80,42 @@ void report(string test)
 
    int k_iter;
 
-   for (int i = 0; i < 1; i++)
+   for (int i = 0; i < 3; i++)
    {
-      // Вектор начального приближения
-      for (int j = 0; j < n; j++)
-         x[j] = 0;
-
       // Выбор метода решения
       switch (i)
       {
       case 0:
+      {
          // Решение методом сопряженных градиентов
          k_iter = slae.conj_grad_method(x, res);
 
          fout << "МСГ" << endl;
          break;
+      }
       case 1:
+      {
+         // Решение методом сопряженных градиентов c неполной
+         // диагональной факторизацией
+         Matrix fac_mat = slae.mat.diag_fact();
+         SLAE fac_slae = SLAE(slae.mat.N, slae.maxiter, slae.eps, fac_mat);
+         k_iter = slae.conj_grad_pred_method(x, res, fac_slae);
 
+         fout << "МСГ c неполной диагональной факторизацией" << endl;
          break;
+      }
 
       case 2:
+      {
+         // Решение методом сопряженных градиентов c неполной
+         // факторизацией Холецкого
+         Matrix fac_mat = slae.mat.holec();
+         SLAE fac_slae = SLAE(slae.mat.N, slae.maxiter, slae.eps, fac_mat);
+         k_iter = slae.conj_grad_pred_method(x, res, fac_slae);
 
+         fout << "МСГ c неполной факторизацией Холецкого" << endl;
          break;
+      }
       }
 
       // Вывод информации в файл "report.txt"
@@ -108,16 +126,26 @@ void report(string test)
       for (int j = 0; j < n; j++)
          fout << res[j] << endl;
 
-      fout << endl;
+      if (calc_pr)
+      {
+         fout << endl;
 
-      // Вывод погрешности
-      for (int j = 0; j < n; j++)
-         fout << real(j) + 1.0 - res[j] << endl;
+         // Вывод погрешности
+         for (int j = 0; j < n; j++)
+            fout << real(j) + 1.0 - res[j] << endl;
+      }
+      fout << endl;
    }
+
+   fout.close();
 }
 
 int main()
 {
+   // Работа тестовыми матрицами маленькой размерности
+   report("small", 1);
+   report("small_sym", 1);
+
    // Работа с матрицами Гильберта разной размерности
    for (int i = 0; i < 1; i++)
    {
@@ -125,10 +153,14 @@ int main()
       cout << "Enter the size of " << i + 1 << " Hilbert matrix: ";
       cin >> n;
       gen_hilb(n);
-      report("hilb");
+      report("hilb", 1);
    }
 
    // Работа с матрицами с диагональным преобладанием
-   report("diagdom");
-   report("diagdommin");
+   report("diagdom", 1);
+   report("diagdommin", 1);
+
+   // Работа с большими матрицами
+   report("big1", 0);
+   //report("big2", 0);
 }

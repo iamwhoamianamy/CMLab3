@@ -83,9 +83,9 @@ void print_vector(string file_name, vector<type>& vec)
    ofstream fout;
    fout.open(file_name);
 
+   int n = vec.size();
    fout << setprecision(14);
 
-   int n = vec.size();
    for (int i = 0; i < n; i++)
       fout << vec[i] << " ";
 

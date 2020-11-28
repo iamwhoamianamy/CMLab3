@@ -142,7 +142,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ConjGradMethod.h" />
+    <ClInclude Include="Matrix.h" />
     <ClInclude Include="SLAE.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>
