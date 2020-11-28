@@ -1,5 +1,7 @@
 #pragma once
 #include <vector>
+#include <iomanip>
+#include <fstream>
 using namespace std;
 
 typedef double real;
@@ -59,4 +61,33 @@ real operator *(const vector<real>& vec1, const vector<real>& vec2)
 real norm(const vector<real>& vec)
 {
    return sqrt(vec * vec);
+}
+
+// Ввод вектора vec размерности n из файла с именем file_name
+template<class type>
+void read_vector(string file_name, vector<type>& vec, int n)
+{
+   vec.resize(n);
+   ifstream fin;
+   fin.open(file_name);
+   for (int i = 0; i < n; i++)
+      fin >> vec[i];
+
+   fin.close();
+}
+
+// Вывод вектора vec в файл с именем file_name
+template<class type>
+void print_vector(string file_name, vector<type>& vec)
+{
+   ofstream fout;
+   fout.open(file_name);
+
+   fout << setprecision(14);
+
+   int n = vec.size();
+   for (int i = 0; i < n; i++)
+      fout << vec[i] << " ";
+
+   fout.close();
 }
