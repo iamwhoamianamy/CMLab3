@@ -47,6 +47,7 @@ public:
 
    }
 
+   // Получение диагональной факторизации матрицы
    Matrix diag_fact()
    {
       Matrix fact = Matrix(N, 0);
@@ -59,6 +60,7 @@ public:
       return fact;
    }
 
+   // Получение неполного разложения Холецкого матрицы
    Matrix holec()
    {
       Matrix fact = Matrix(N, M);

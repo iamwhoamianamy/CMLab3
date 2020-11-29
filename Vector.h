@@ -6,7 +6,7 @@ using namespace std;
 
 typedef double real;
 
-// Перегрузка оператора "*" для умножения вектора на число
+// Умножение вектора на число
 vector<real> operator * (real val, const vector<real>& vec)
 {
    vector<real> res(vec.size());
@@ -16,7 +16,7 @@ vector<real> operator * (real val, const vector<real>& vec)
    return res;
 }
 
-// Перегрузка оператора "+" для векторов
+// Сложение векторов
 vector<real> operator + (const vector<real>& vec1, const vector<real>& vec2)
 {
    if (vec1.size() != vec2.size())
@@ -29,7 +29,7 @@ vector<real> operator + (const vector<real>& vec1, const vector<real>& vec2)
    return res;
 }
 
-// Перегрузка оператора "-" для векторов
+// Вычитание векторов
 vector<real> operator - (const vector<real>& vec1, const vector<real>& vec2)
 {
    if (vec1.size() != vec2.size())
@@ -84,7 +84,7 @@ void print_vector(string file_name, vector<type>& vec)
    fout.open(file_name);
 
    int n = vec.size();
-   fout << setprecision(14);
+   fout << setprecision(16);
 
    for (int i = 0; i < n; i++)
       fout << vec[i] << " ";

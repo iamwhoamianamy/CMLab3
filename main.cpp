@@ -6,10 +6,8 @@
 using namespace std;
 
 // Генерация матрицы Гильберта размерности n
-void gen_hilb(int n)
+void gen_hilb(string path0, int n)
 {
-   string path0 = "tests/hilb/";
-
    ofstream fout;
    fout.open(path0 + "kuslau.txt");
 
@@ -25,7 +23,7 @@ void gen_hilb(int n)
 
    ig[0] = ig[1] = 0;
 
-   di[0] = 1;
+   di[0] = 1.0;
 
    for (int i = 1; i < n; i++)
    {
@@ -56,6 +54,17 @@ void report(string test, bool calc_pr)
    string path0 = "tests/" + test + "/";  // Путь к папке с матрицей
    SLAE slae = SLAE(path0);               // Ввод матрицы из файлов
    int n = slae.mat.N;
+
+   if (test == "big1" || test == "big2")
+   {
+      int n = slae.mat.N;
+      for (int i = 0; i < n + 1; i++)
+         slae.mat.ig[i]--;
+
+      int m = slae.mat.M;
+      for (int i = 0; i < m; i++)
+         slae.mat.jg[i]--;
+   }
 
    vector<real> x(n);
    vector<real> res(n);
@@ -91,6 +100,8 @@ void report(string test, bool calc_pr)
          k_iter = slae.conj_grad_method(x, res);
 
          fout << "МСГ" << endl;
+         cout << "MCG for     " << setw(15) << test << " matrix succeded!" << endl;
+
          break;
       }
       case 1:
@@ -98,10 +109,14 @@ void report(string test, bool calc_pr)
          // Решение методом сопряженных градиентов c неполной
          // диагональной факторизацией
          Matrix fac_mat = slae.mat.diag_fact();
+         cout << "Diag matrix for  " << setw(10) << test << " was created!" << endl;
+
          SLAE fac_slae = SLAE(slae.mat.N, slae.maxiter, slae.eps, fac_mat);
          k_iter = slae.conj_grad_pred_method(x, res, fac_slae);
 
          fout << "МСГ c неполной диагональной факторизацией" << endl;
+         cout << "MCG d for   " << setw(15) << test << " matrix succeded!" << endl;
+
          break;
       }
 
@@ -110,10 +125,14 @@ void report(string test, bool calc_pr)
          // Решение методом сопряженных градиентов c неполной
          // факторизацией Холецкого
          Matrix fac_mat = slae.mat.holec();
-         SLAE fac_slae = SLAE(slae.mat.N, slae.maxiter, slae.eps, fac_mat);
+         cout << "Holec matrix for " << setw(10) << test << " was created!" << endl;
+
+         SLAE fac_slae = SLAE(slae.mat.N, 100, slae.eps, fac_mat);
          k_iter = slae.conj_grad_pred_method(x, res, fac_slae);
 
          fout << "МСГ c неполной факторизацией Холецкого" << endl;
+         cout << "MCG hol for " << setw(15) << test << " matrix succeded!" << endl << endl;
+
          break;
       }
       }
@@ -147,13 +166,13 @@ int main()
    report("small_sym", 1);
 
    // Работа с матрицами Гильберта разной размерности
-   for (int i = 0; i < 1; i++)
+   for (int i = 0; i < 2; i++)
    {
       int n;
-      cout << "Enter the size of " << i + 1 << " Hilbert matrix: ";
+      cout << endl << "Enter the size of " << i + 1 << " Hilbert matrix: ";
       cin >> n;
-      gen_hilb(n);
-      report("hilb", 1);
+      gen_hilb("tests/hilb" + to_string(i + 1) + "/", n);
+      report("hilb" + to_string(i + 1), 1);
    }
 
    // Работа с матрицами с диагональным преобладанием
@@ -161,6 +180,6 @@ int main()
    report("diagdommin", 1);
 
    // Работа с большими матрицами
-   report("big1", 0);
+   //report("big1", 0);
    //report("big2", 0);
 }

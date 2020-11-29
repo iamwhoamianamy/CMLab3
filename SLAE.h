@@ -105,7 +105,7 @@ public:
          bk = (rk1 * rk1) / bk;
          zk1 = rk1 + bk * zk1;
 
-         real disc = norm(rk1) / norm(pr);
+         real disc = norm(rk1) / norm(pr); // Относительная невязка
 
          if (disc < eps)
             break;
