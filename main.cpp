@@ -89,7 +89,7 @@ void report(string test, bool calc_pr)
 
    int k_iter;
 
-   for (int i = 0; i < 3; i++)
+   for (int i = 0; i < 2; i++)
    {
       // Выбор метода решения
       switch (i)
@@ -108,7 +108,8 @@ void report(string test, bool calc_pr)
       {
          // Решение методом сопряженных градиентов c неполной
          // диагональной факторизацией
-         Matrix fac_mat = slae.mat.diag_fact();
+         Matrix fac_mat = Matrix(slae.mat.N, 0);
+         slae.mat.diag_fact(fac_mat);
          cout << "Diag matrix for  " << setw(10) << test << " was created!" << endl;
 
          SLAE fac_slae = SLAE(slae.mat.N, slae.maxiter, slae.eps, fac_mat);
@@ -119,24 +120,22 @@ void report(string test, bool calc_pr)
 
          break;
       }
+      //case 2:
+      //{
+      //   // Решение методом сопряженных градиентов c неполной
+      //   // факторизацией Холецкого
+      //   Matrix fac_mat = slae.mat.holec();
+      //   cout << "Holec matrix for " << setw(10) << test << " was created!" << endl;
 
-      case 2:
-      {
-         // Решение методом сопряженных градиентов c неполной
-         // факторизацией Холецкого
-         Matrix fac_mat = slae.mat.holec();
-         cout << "Holec matrix for " << setw(10) << test << " was created!" << endl;
+      //   SLAE fac_slae = SLAE(slae.mat.N, 100, slae.eps, fac_mat);
+      //   k_iter = slae.conj_grad_pred_method(x, res, fac_slae);
 
-         SLAE fac_slae = SLAE(slae.mat.N, 100, slae.eps, fac_mat);
-         k_iter = slae.conj_grad_pred_method(x, res, fac_slae);
+      //   fout << "МСГ c неполной факторизацией Холецкого" << endl;
+      //   cout << "MCG hol for " << setw(15) << test << " matrix succeded!" << endl << endl;
 
-         fout << "МСГ c неполной факторизацией Холецкого" << endl;
-         cout << "MCG hol for " << setw(15) << test << " matrix succeded!" << endl << endl;
-
-         break;
+      //   break;
+      //}
       }
-      }
-
       // Вывод информации в файл "report.txt"
       fout << k_iter << endl; // Количество итераций
       fout << setprecision(14);
@@ -156,6 +155,7 @@ void report(string test, bool calc_pr)
       fout << endl;
    }
 
+   cout << endl;
    fout.close();
 }
 
@@ -169,7 +169,7 @@ int main()
    for (int i = 0; i < 2; i++)
    {
       int n;
-      cout << endl << "Enter the size of " << i + 1 << " Hilbert matrix: ";
+      cout << "Enter the size of " << i + 1 << " Hilbert matrix: ";
       cin >> n;
       gen_hilb("tests/hilb" + to_string(i + 1) + "/", n);
       report("hilb" + to_string(i + 1), 1);
@@ -180,6 +180,6 @@ int main()
    report("diagdommin", 1);
 
    // Работа с большими матрицами
-   //report("big1", 0);
-   //report("big2", 0);
+   report("big1", 0);
+   report("big2", 0);
 }
